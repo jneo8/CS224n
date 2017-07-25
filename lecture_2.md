@@ -227,11 +227,10 @@ Where θ represents all variables we will optimize
 > θ 表示可以被優化的 任何參數
 
 
----
 
 ## The objective function – details- Terminology: Loss function = cost function = objective function- Usual loss for probability distribution: Cross-entropy loss- With one-hot wt+j target, the only term left is the negative log probability of the true class- More on this later...
 
----
+
 
 ## Details of Word2Vec
 predict surrounding words in a window of radius m of every word
@@ -258,19 +257,171 @@ vc and uo are “center” and “outside”  vectors of indices c and o
 > `Softmax` 使用 詞 c 來獲得 詞 o 的 概率
 
 
----
 
-## Dot product
+###  Dot product
 
 ![dot product](https://github.com/jneo8/CS224n/blob/master/images/word2vec_3.png?raw=true)
 
+### Softmax function
+
+![softmax function](https://github.com/jneo8/CS224n/blob/master/images/wod2vec_4.png?raw=true)
+
+### skipgram
+
+![skipgram](https://github.com/jneo8/CS224n/blob/master/images/wod2vec_5.png?raw=true)
 
 
+---
 
+##  To train the model: compute all vector gradients!
+
+- We often define the set of all parameters in a model interms of one long vector θ
+
+- In our case with d-dimensional vectors andV many words: 
+
+![skipgram](https://github.com/jneo8/CS224n/blob/master/images/wod2vec_6.png?raw=true)
+
+- We then optimize these parameters
+
+**Note: Every word has two vectors! make it simpler.**
+
+
+> 優化參數 θ
+> 
+> 每個 w 都有兩個向量
+
+
+---
+
+## Derivations of gradient
+
+> 接下去會花很多時間推導公式
+
+- whiteboard - see video if you are not in class
+- The basic Lego piece
+- Useful basice 
+
+![Useful basice ](https://github.com/jneo8/CS224n/blob/master/images/wod2vec_7.png?raw=true)
+
+- if in doubt: write out with indices
+- Chain rule! If y = f(u) and u = g(x), i.e. y=f(g(x)), then 
+
+![Chain rule](https://github.com/jneo8/CS224n/blob/master/images/wod2vec_8.png?raw=true)
+
+- Chain rule! If y = f(u) and u = g(x), i.e. y = f(g(x)), then:
+
+
+![Chain rule](https://github.com/jneo8/CS224n/blob/master/images/wod2vec_9.png?raw=true)
+
+![Chain rule](https://github.com/jneo8/CS224n/blob/master/images/wod2vec_10.png?raw=true)
+
+---
+
+## Interactive Whiteboard Session!
+
+![j(θ)](https://github.com/jneo8/CS224n/blob/master/images/word2vec_1.png?raw=true)
+
+
+Let’s derive gradient for center word togetherFor one example window and one example outside word:
+
+![11](https://github.com/jneo8/CS224n/blob/master/images/wod2vec_11.png?raw=true)
+
+You then also also need the gradient for context words (it’s similar; left for homework). That’s all of the paramets θ here.
+
+![12](https://github.com/jneo8/CS224n/blob/master/images/wod2vec_12.png?raw=true)
+
+![13](https://github.com/jneo8/CS224n/blob/master/images/wod2vec_13.png?raw=true)
+
+![14](https://github.com/jneo8/CS224n/blob/master/images/wod2vec_14.png?raw=true)
+
+![15](https://github.com/jneo8/CS224n/blob/master/images/wod2vec_15.png?raw=true)
+
+
+---
+
+## Calculating all gradients!
+- We went through gradient for each center vector v in a window- We also need gradients for outside vectors u- Derive at home!- Generally in each window we will compute updates for all parameters that are being used in that window.- For example, window size m = 1, sentence: “We like learning a lot”- First window computes gradients for:- internal vector vlike and external vectors uWe and ulearning- Next window in that sentence?
+
+
+---
+
+##  Cost/Objective functions
+
+We will optimize (maximize or minimize) our objective/cost functionsFor now: minimizeàgradient descentTrivial example: (from Wikipedia)Find a local minimum of the functionf(x) = x4−3x3+2, with derivative f'(x) = 4x3−9x2
+
+![16](https://github.com/jneo8/CS224n/blob/master/images/wod2vec_16.png?raw=true)
+
+```python
+x_old = 0
+x_new = 6
+precision = 0.000001
+def f_derivative(x):
+	return 4 * x**3 - 9 * x**2
+
+while abs(x_new - x_old) > precision:
+	x_old = x_new
+	x_new = x_old - eps * f_derivative(x_old)
 	
+print("Local minimun occurs at", x_new)
+
+# Substacting a fraction of the gradient moves you towards the minimum!
+
+```
+---
+
+## Gradient Descent
+
+- To minimize   over the full batch (the entire training data) would require us to compute gradients for all windows
+
+- Updates would be for each element of θ :
+
+![17](https://github.com/jneo8/CS224n/blob/master/images/wod2vec_17.png?raw=true)
+
+- With step size α- In matrix notation for all parameters:
+
+![18](https://github.com/jneo8/CS224n/blob/master/images/wod2vec_18.png?raw=true)
+
+---
+
+## Vanilla Gradient Descent Code
+
+![19](https://github.com/jneo8/CS224n/blob/master/images/wod2vec_19.png?raw=true)
+
+```python 
+while True:
+
+	theta_grad = evaluate_gradient(J, corpus, theta)
+	theta = theta - alpha * theta_grad
+```
+
+---
 
 
+## Intuition
 
+For a simple convex function over two parameters. 
+
+Contour lines show levels of objective function
+
+
+![20](https://github.com/jneo8/CS224n/blob/master/images/wod2vec_20.png?raw=true)
+
+---
+
+## Stochastic Gradient Descent
+
+But Corpus may have 40B tokens and windows
+- You would wait a very long time before making a single update!- Very bad idea for pretty much all neural nets!- Instead: We will update parameters after each window t àStochastic gradient descent (SGD)
+
+![21](https://github.com/jneo8/CS224n/blob/master/images/wod2vec_21.png?raw=true)
+
+
+```python
+while True:
+	window = sample_window(corpus)
+	theta_grad = evaluate_gradient(J, window, theta)
+	theta = theta - alpha * theta_grad
+```
 
 
 
