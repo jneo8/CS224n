@@ -91,9 +91,61 @@ We will become good friends soon
  - ![](https://github.com/jneo8/CS224n/blob/master/images/glove_8.png?raw=true)
   	The unigram distribution U(w) raised to the 3/4 power (we provide this function in the starter code).
   	
-  - The power makes ledd frequent words be sampled more often
+  - The power makes less frequent words be sampled more often
+
+> 這邊解釋了 `skip -gram` 運作的方式
+> 
+> 使用  [sigmoid function](https://zh.wikipedia.org/wiki/S函数)
+> 
+> 最大化了 first log(公式前半段) 共同出現兩個 word 的 probability
+> 
+> 取 k 個負樣本,
+> 
+> 使用 U(w)3/4z 使得 出現頻率較少的詞被更頻繁抽樣
+
 
 ---
+
+## Ass 1 The continuous bag of words model
+
+- Main idea for continuous of words (CBOW) : predict center word wrom sum of surrounding word vectors instead of predict surrounding single words from center word as in skip-gram model.
+
+- To make assiment slightly easier:
+	
+	Implementation of the CBOW model is not required(you can do it for a couple og bonus points), but you do have to the written problem on CBOW
+
+
+> CBOW 的 主要思想是預測中心詞和周圍詞向量的 和
+
+> CBOW model 並不一定要執行, 詳見上
+
+---
+
+## Word2vec improves object function by putting similar words nearby in space
+
+![](https://github.com/jneo8/CS224n/blob/master/images/glove_9.png?raw=true)
+
+---
+
+## Summary of word2vec
+
+- Go through each word of the whole corpus
+- Predict surrounding words of each word
+- This captures cooccurrence of words one at a time
+- why not capture cooccurence counts directly
+
+**Yes we can**
+
+With a co-occurrence matrix X
+
+- 2 options: full document vs windows
+- Word-document co-occurrence matrix will give general topics (all sports terms will have similar entries) leading to "Latent Semantic Analysis"
+
+
+- Instead: Similar to word2vec, use window around each word -> captures both syntactic(POS) and semantic information.
+
+
+
   
 
 
