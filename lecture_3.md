@@ -145,6 +145,160 @@ With a co-occurrence matrix X
 - Instead: Similar to word2vec, use window around each word -> captures both syntactic(POS) and semantic information.
 
 
+---
+
+## Example : window based co-occurrence matrix
+
+- window length (more common: 5 - 10)
+- symmetric(irrelevant whether left or right context)
+- Example corpus 
+	- i like deep learning
+	- i like NLP
+	- i enjoy flying
+	
+![](https://github.com/jneo8/CS224n/blob/master/images/glove_10.png?raw=true)
+
+> 圖表 是  window based co-occurrence matrix, 
+> 
+> 以第一行來說, 表示了  word `i` 在長度唯一的狀況下, 臨近詞的統計
+
+<br>
+
+## Problem with simple co-occurence vectors
+
+Increase in size with vocabulary
+
+Very high dimensional: require a lot of storage
+
+Subsequent classification models have sparsity issues
+
+-> `Models are less rebost`
+
+> 隨著詞彙增加, 會需要大量儲存, 效能不佳
+> 
+> 分類器模型會有稀疏性問題
+
+---
+
+## Solution : Low dimensional vectors
+
+- idea: store "most" of the important information in a fixed, small number of dimensions: a dense vector
+
+- usually 25 - 100 dimensions, similar to word2vec
+
+- How to reduce the dimensionality?
+
+> 為了提高效能, 使用了跟 word2vec 相同的概念, 只存了重要的 dimensions, 大多是 25 - 100 個, 
+> 但是問題是要如何縮減  dimensions
+
+
+---
+
+## Method 1 : dimensionality Reduction on x
+
+singular Value Decomposition of co-occurrence matrix `X`
+
+![](https://github.com/jneo8/CS224n/blob/master/images/glove_11.png?raw=true)
+
+> 使用 SVD 奇異值分解 co-occurrence martix, 可以有效降低矩陣大小
+
+
+<br>
+
+## SVD python example
+
+```python
+
+"""Sample code SVD."""
+import numpy as np
+import matplotlib.pyplot as plt
+import subprocess
+import os
+
+
+def main():
+    la = np.linalg
+
+    words = ['i', 'like', 'enjoy', 'deep', 'learning', 'NLP', 'flying', '.']
+    x = np.array([
+        [0, 2, 1, 0, 0, 0, 0, 0],
+        [2, 0, 0, 1, 0, 1, 0, 0],
+        [0, 0, 0, 0, 0, 0, 1, 0],
+        [0, 1, 0, 0, 1, 0, 0, 0],
+        [0, 0, 0, 1, 0, 0, 0, 1],
+        [0, 1, 0, 0, 0, 0, 0, 1],
+        [0, 0, 1, 0, 0, 0, 0, 1],
+        [0, 0, 0, 0, 1, 1, 1, 0],
+    ])
+
+    u, s, vh = la.svd(x, full_matrices=False)
+
+    for i in range(len(words)):
+        plt.text(u[i, 0], u[i, 1], words[i])
+
+    plt.savefig('svd')
+    subprocess.call(['catimg', '-f', 'svd.png'])
+    os.remove('svd.png')
+    
+ if __name__ == '__main__':
+    main()
+```
+
+![](https://github.com/jneo8/CS224n/blob/master/images/glove_12.png?raw=true)
+
+
+---
+
+## Hacks to x
+
+- problem: function words (the, he, has) are too frequent -> syntax has too impact. Some fixes:
+	- min(x, t), with t~100
+	- lgnore them all
+
+- Ramped windows that count closer word more
+- Use pearson correlations instead of counts, then set negative values to 0
+- +++
+
+> Hacks 方式
+> 給太頻繁出現的字, 例如 stopword, 最大值 or 忽略他們
+> windows 針對較近的字計算更多次
+> 使用 `pearson correlations` 而不是 count, 將負值設為 0
+
+
+---
+
+## Interesting semantic patters emerge in the vectors
+
+![](https://github.com/jneo8/CS224n/blob/master/images/glove_13.png?raw=true)
+
+![](https://github.com/jneo8/CS224n/blob/master/images/glove_14.png?raw=true)
+
+![](https://github.com/jneo8/CS224n/blob/master/images/glove_15.png?raw=true)
+
+
+An Improved Model of SemanRc Similarity Based on Lexical Co-Occurrence Rohde et al. 2005
+
+
+> 效果展示
+
+---
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
 
   
 
