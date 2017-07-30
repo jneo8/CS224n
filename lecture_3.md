@@ -260,8 +260,11 @@ def main():
 - +++
 
 > Hacks 方式
+> 
 > 給太頻繁出現的字, 例如 stopword, 最大值 or 忽略他們
+> 
 > windows 針對較近的字計算更多次
+> 
 > 使用 `pearson correlations` 而不是 count, 將負值設為 0
 
 
@@ -283,14 +286,182 @@ An Improved Model of SemanRc Similarity Based on Lexical Co-Occurrence Rohde et 
 
 ---
 
+## Problem with SVD
+
+Computational cost scales quadratically for n x m matrix:
+
+O(mn2) flops (when n < m)
+-> Bad for millions of words or documents
+
+Hard to incorporate new words or documents
+Different learning regime than other dl models
 
 
+> n * m 矩陣的計算成本
+> 很難納入新詞, 相較於其他 dl models, 因為一旦加入新詞必須重跑整個 流程
 
- 
+---
+
+## Count based vs direct prediction
+
+- Count based
+	- LSA, HAL(lund & Burgess)
+	- COALS, Hellinger-PCA (Rohde et al , lebret & Collobert)
+
+	- advantage	
+		- Fast training
+		- Efficient usage of statistics
+
+	- disadvantage
+		- Primarily udes to capture word similarity
+		- Disproportionate importance given to large counts
+
+- Direct prediction
+	- Skip-gram/CBOW (mikolov et all)
+	- NNLM, HLBL, RNN (Bengio et al; Collobert & Weston;Huang et al; Mnih & Hinton; Mikolov et al; Mnih & Kavukcuoglu)
+
+	
+	- advantage
+		- Scale with corpus size
+		- inefficient usage of statistics
+
+	- disadvantage
+		- Generate improved performance on other tasks
+		- Can capture complex patterns beyond word similarity
+
+> 比較了 Count based & Direct prediction 的優缺點
 
 
+---
+
+Combining the best of both worlds : GloVe
+
+![](https://github.com/jneo8/CS224n/blob/master/images/glove_16.png?raw=true)
+
+- Fast training
+- Scalable to huge corpora
+- Good performance even with small corpus, and small vectors
+
+> Glove 
+> 
+> 訓練快
+> 
+> 可以適用於大型 or 小型語料庫, 都有良好的表現
+
+---
+
+## What to do with the two sets of vectors?
+
+- We end up with U and V from all the vectors u and v (in columns)
+- Both capture similar co-occurrence information. It turns out, the best solution is to simply sum them up:
+
+![](https://github.com/jneo8/CS224n/blob/master/images/glove_17.png?raw=true)
+
+- One of many hyperparameters explored in `Glove`: Global Vectors for word Representation, Pennington et al. (2014)
+
+---
+	
+## Glove results 
+
+Nerest words to `frog`
+
+- frogs
+- toad
+- litoria
+- leptodactylidae
+- rana
+- lizard
+- eleutherodactylus
+
+> Glove 效果, frog 的相近詞
+
+---
+
+## How to evaluate word vectors
+
+- Related to general evaluation in NLP; intrinsic vs extrinsic
+- Intrinsic
+	- Evaluation on a specific/intermediate subtask
+	- Fast to compute
+	- Helps to inderstand that system
+	- Not clear if really helpful unless correlation to real task is established
+
+- Extrinsic
+	- Evaluation on a real task
+	- Can take a long time to compute accuracy
+	- Unclear if the subsystem is the problem or its interaction or other subsystem 
+	- if replacing exactly one subsystem with another improves accuracy -> winning!
+
+> 如何評估  word vectors?
+
+---
+
+## Intrinsic word vector evaluation
+
+- word vector angalogies
+	`man:woman :: king:?`
+	
+	![](https://github.com/jneo8/CS224n/blob/master/images/glove_18.png?raw=true)
+	
+	![](https://github.com/jneo8/CS224n/blob/master/images/glove_19.png?raw=true)
+	
+- Evalute word vectors by how well their cosine distance after addition captures intuitive senmantic and syntactic analogy questions
+- Discarding the input words from the search!
+- Problem: What if the information is there but not linear?
+
+> 透過加法的餘弦距離來評估 word vector
+> 或者放棄輸入字
+> 
+> 問題是 如果不是線性的？
+
+![](https://github.com/jneo8/CS224n/blob/master/images/glove_20.png?raw=true)
+![](https://github.com/jneo8/CS224n/blob/master/images/glove_21.png?raw=true)
+![](https://github.com/jneo8/CS224n/blob/master/images/glove_22.png?raw=true)
 
 
+<br>
+
+## Details of intrinsic word vector evalution
+
+- Word Vector Analogies: SyntacRc and Seman(c examples from 
+	[hmp://code.google.com/p/word2vec/source/browse/trunk/quesRons- words.txt](hmp://code.google.com/p/word2vec/source/browse/trunk/quesRons- words.txt)
+	
+--- 
+
+## Analogy evaluation and hyperparameters
+
+- very careful analysis: Glove word vectors
+
+![](https://github.com/jneo8/CS224n/blob/master/images/glove_23.png?raw=true)
+
+
+> dimension 數量大的不一定比較準, 但是 size 大的會越準
+> 在利用 餘弦距離取得 相對詞  Glove word vectors 表現良好(最下面一行)
+
+- Asymmetric context (only words to the lel) are not as good
+
+![](https://github.com/jneo8/CS224n/blob/master/images/glove_24.png?raw=true)
+
+- Best dimensions ~300, slight drop-off afterwards
+- But this might be different for downstream tasks
+- Window size of 8 around each center word is good for glove vectors
+
+> 評估 hyperparameters 的影響
+
+![](https://github.com/jneo8/CS224n/blob/master/images/glove_25.png?raw=true)
+
+
+![](https://github.com/jneo8/CS224n/blob/master/images/glove_26.png?raw=true)
+
+## Another intrinsic word vector evaluation
+
+- word vector distances and their correlation with human judgments
+- Example dataset: WordSim353
+
+[hmp://www.cs.technion.ac.il/~gabr/resources/data/wordsim353/](hmp://www.cs.technion.ac.il/~gabr/resources/data/wordsim353/)
+  
+  
+---
 
 
 
