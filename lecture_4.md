@@ -94,6 +94,13 @@ But we don't have to decide ahead of time what variables these logistic regressi
 
 
 ![](https://github.com/jneo8/CS224n/blob/master/images/l4_6.png?raw=true)
+
+
+---
+
+
+# The max-margin loss
+
 
 
 
