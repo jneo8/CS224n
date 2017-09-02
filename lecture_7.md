@@ -90,7 +90,7 @@ train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
 **TensorFlow graph nodes have attached gradient operations Gradient with respect to parameters computed with backpropagation**
 
 
-## Creating the train_step op
+## training the model
 
 ```python
 
@@ -111,6 +111,36 @@ sess = tf.Session()sess.run(tf.initialize_all_variables())for i in range(1000)
 
 
 ---
+
+## Value scope
+
+```python
+tf.variable_scope()  # provides simple name-spacing to avoid clashes.
+tf.get_variable()  # creates/accesses variables from within a variable scope.
+
+
+with tf.variable_scope('foo'):
+	v  = tf.get_variable('v', shape=[1])  # v.name == "foo/v:0"
+	
+with tf.variable_scope('foo', reuse=True):
+	v1 = tf.get_variable('v')  # shared variable found!
+	
+with tf.variable_scope('foo', reuse=False):
+	v1 = tf.get_variable('v')  # CRASH foo/v:0 already exists!
+```
+
+---
+
+## In summary
+
+- Build a graph
+	- Feedforward / Prediction
+	- Optimization
+
+- Initialize a session
+
+- Train with session.run(train_step, feed_dict)
+
 
 
 
