@@ -33,11 +33,11 @@ def maybe_download(filename, expected_bytes):
         print(statinfo.st_size)
         raise exception(
             f'Failed to verify {local_filename}.'
-            ' Can you get to it with a browser? '    
+            ' Can you get to it with a browser? '
         )
     return local_filename
 
-filename = maybe_download(text8.zip, 31344016)
+filename = maybe_download('text8.zip', 31344016)
 
 # Read the data into a list of strings.
 def read_data(filename):
