@@ -37,6 +37,18 @@ def maybe_download(filename, expected_bytes):
         )
     return local_filename
 
+filename = maybe_download(text8.zip, 31344016)
+
+# Read the data into a list of strings.
+def read_data(filename):
+    """Extract the first enclosed in a zip file as a list of words."""
+    with zipfile.ZipFile(filename) as f:
+        data = tf.compat.as_str(f.read(f.namelist()[0])).split()
+    return data
+
+vocabulary = read_data(filename)
+print('Data size', len(vocabulary))
+
 
 
 
