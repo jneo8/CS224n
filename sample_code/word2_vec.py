@@ -59,7 +59,7 @@ print('Data size', len(vocabulary))
 vocabulary_size = 50000
 
 
-def build_dateset(word, n_words):
+def build_dataset(words, n_words):
     """Process raw input into a dateset."""
     count = [['UNK', -1]]
     count.extend(collections.Counter(words).most_common(n_words -1))
@@ -67,23 +67,33 @@ def build_dateset(word, n_words):
     for word, _ in count:
         dictionary[word] = len(dictionary)
     data = list()
-    unk_count = 0 
+    unk_count = 0
     for word in words:
         index = dictionary.get(word, 0)
         if index == 0:  # dictionary['UNK']
             unk_count += 1
         data.append(index)
     count[0][1] = unk_count
-    reverdes_dictionary = dict((zip(dictionary.values(), dictionary.keys())))
+    reversed_dictionary = dict((zip(dictionary.values(), dictionary.keys())))
     return data, count, dictionary, reversed_dictionary
-
-
 
 ################################
 # Filling 4 global variables:
 # data - list of codes (integers from 0 to vocabulary_size-1).
 #   This is the original text but words are replaced by their codes
+# count - map of words(strings) to count of occurences
+# dictionary - map of words(strings) to their codes(integers)
+# reverse_dictionary - maps codes(integers) to words(strings)
 ################################
+
+data, count, dictionary, reverse_dictionary = build_dataset(vocabulary,
+                                                            vocabulary_size)
+
+del vocabulary  # Hint to reduce memory.  
+print("Most common words (+UNK), count[:5]")
+print('Sample data', data[:10], [reverse_dictionary[i] for i in data[:10]])
+
+
 
 
 
