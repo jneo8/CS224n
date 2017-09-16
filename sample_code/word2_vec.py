@@ -22,6 +22,7 @@ url = 'http://mattmahoney.net/dc/'
 def maybe_download(filename, expected_bytes):
     """Download a file if not present, and make sure it's the right size."""
     local_filename = os.path.join(gettempdir(), filename)
+    print(local_filename)
     if not os.path.exists(local_filename):
         local_filename, _ = urllib.request.urlretrieve(
                 url + filename, local_filename
@@ -51,6 +52,38 @@ print('Data size', len(vocabulary))
 
 
 
+################################
+# step 2: Build the dictionary and rare words with UNK token.
+###############################
+
+vocabulary_size = 50000
+
+
+def build_dateset(word, n_words):
+    """Process raw input into a dateset."""
+    count = [['UNK', -1]]
+    count.extend(collections.Counter(words).most_common(n_words -1))
+    dictionary = dict()
+    for word, _ in count:
+        dictionary[word] = len(dictionary)
+    data = list()
+    unk_count = 0 
+    for word in words:
+        index = dictionary.get(word, 0)
+        if index == 0:  # dictionary['UNK']
+            unk_count += 1
+        data.append(index)
+    count[0][1] = unk_count
+    reverdes_dictionary = dict((zip(dictionary.values(), dictionary.keys())))
+    return data, count, dictionary, reversed_dictionary
+
+
+
+################################
+# Filling 4 global variables:
+# data - list of codes (integers from 0 to vocabulary_size-1).
+#   This is the original text but words are replaced by their codes
+################################
 
 
 
