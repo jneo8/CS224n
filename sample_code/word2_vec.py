@@ -134,8 +134,33 @@ def generate_batch(batch_size, num_skips, skip_window):
 
 batch, labels = generate_batch(batch_size=8, num_skips=2, skip_window=1)
 for i in range(8):
-    print(batch[i], reverse_dictionary[batch[i]],
-        '->', labels[i, 0], reverse_dictionary[labels[i, 0]])
+    print(
+        batch[i],
+        reverse_dictionary[batch[i]],
+        '->',
+        labels[i, 0],
+        reverse_dictionary[labels[i, 0]]
+    )
+
+################################
+# Step 4: build and train a skip-gram model.
+################################
+
+batch_size = 128
+embedding_size = 128  # Dimension of the embedding vector.
+skip_window = 1       # How many words to conider left and right.
+num_skips = 2         # How many times to reuse an input to generate a label.
+num_sampled = 64      # Number of negative examples to sample.
+
+# We pick a random validation set to sample nearest neighbors.
+# Here we limit the validatino samples to the words that have a low numeric ID, 
+# which by construction are also the most frequnt.
+# These 3 variables are used to only for displaying model accuracy,
+# they don't affect calculation.
+valid_size = 16       # Random set of words to evaluate similarity on.
+valid_window = 100    # Only pick dev samples in the head of the distribution.
+valid_examples = np.random.choice(valid_window, valid_size, replace=False)
+
 
 
 
