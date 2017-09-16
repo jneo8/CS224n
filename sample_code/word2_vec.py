@@ -180,7 +180,7 @@ with graph.as_default():
         embed = tf.nn.embedding_lookup(embeddings, train_inputs)
 
         # Construct the variables for the NCE loss
-        nce_weight = tf.Variable(
+        nce_weights = tf.Variable(
             tf.truncated_normal([vocabulary_size, embedding_size],
                                 stddev=1.0 / math.sqrt(embedding_size))
         )
@@ -188,6 +188,22 @@ with graph.as_default():
         nce_biases = tf.Variable(tf.zeros([vocabulary_size]))
 
     # Computer the average NCE loss for batch
+    # tf.nce_loss automatically draws a new sample of the negative labels each
+    # time we evaluate the loss.
+    # Explanation of the eaning of NCE loss:
+    #   http://mccormickml.com/2016/04/19/word2vec-tutorial-the-skip-gram-model/
+    loss = tf.reduce_mean(
+        tf.nn.nce_loss(weights=nce_weights,
+                        biases=nce_biases,
+                        labels=train_labels,
+                        inputs=embed,
+                        num_sampled=num_sampled,
+                        num_classes=vocabulary_size))
+
+    # Construct the SGD optimizer using a learning rare of 1.0.
+    optimizer = tf.train.GradientDescentOptimizer(1.0).minimize(loss)
+
+    # Compute the cosine similarity between minbatch examples and all embeddings.
     norm = tf.sqrt(tf.reduce_sum(tf.square(embeddings), 1, keep_dims=True))
     normalized_embeddings = embeddings / norm
     valid_embeddings = tf.nn.embedding_lookup(
@@ -199,8 +215,86 @@ with graph.as_default():
     init = tf.global_variables_initializer()
 
 
+################################
+# Step 5: Begin training
+################################
+
+num_steps = 100001
+
+with tf.Session(graph=graph) as session:
+    # We must initialize all variables before we use them.
+    init.run()
+    print("Initialized")
+
+    average_loss = 0
+    for step in xrange(num_steps):
+        batch_inputs, batch_labels = generate_batch(
+            batch_size, num_skips, skip_window)
+        feed_dict = {train_inputs: batch_inputs, train_labels: batch_labels}
+
+        # We perform one update step by evaluating the optimizer op
+        # including it in the list of returned values for session.run()
+        _, loss_val = session.run([optimizer, loss], feed_dict=feed_dict)
+        average_loss += loss_val
+
+        if step % 2000 == 0:
+            if step > 0:
+                average_loss /= 2000
+            # The average loss is an estimate of
+            # the loss over the last 2000 batches.
+            print(f'Average loss at step {step}: {average_loss}')
+            average_loss = 0
+
+        if step % 10000 == 0:
+            sim = similarity.eval()
+            for i in xrange(valid_size):
+                valid_word = reverse_dictionary[valid_examples[i]]
+                top_k = 8  # number of nearest neighbors
+                nearest = (-sim[i, :]).argsort()[1:top_k + 1]
+                log_str = f'Nearest to {valid_word} :'
+                for k in xrange(top_k):
+                    close_word = reverse_dictionary[nearest[k]]
+                    log_str = f'{log_str} {close_word}'
+                print(log_str)
+    final_embeddings = normalized_embeddings.eval()
 
 
+################################
+# Step 6: Visualize the embeddings.
+################################
+
+# function to draw visualization of distance between embeddings.
+def plot_with_labels(low_dim_embs, labels, filename):
+    assert low_dim_embs.shape[0] >= len(labels), 'More labels than embeddings'
+    plt.figure(figsize=(18, 18))  # in inches
+    for i, label in enumerate(labels):
+        x, y = low_dim_embs[i, :]
+        plt.scatter(x, y)
+        plt.annotate(label,
+                    xy=(x, y),
+                    xytext=(5, 2),
+                    textcoords='offset points',
+                    ha='right',
+                    va='bottom')
+
+        plt.savefig(filename)
+        subprocess.call(['catimg', '-f', 'tsne.png'])
+
+try:
+    from sklearn.manifold import TSNE
+    import matplotlib.pyplot as plt
+    import subprocess
+    tsne = TSNE(
+        perplexity=30, n_components=2, init='pca', n_iter=5000, method='exact')
+    plot_only = 500
+    low_dim_embs = tsne.fit_transform(final_embeddings[:plot_only, :])
+    labels = [reverse_dictionary[i] for i in xrange(plot_only)]
+    plot_with_labels(
+        low_dim_embs, labels, os.path.join(gettempdir(), 'tsne.png'))
+
+except ImportError as ex:
+    print('Please install sklearn, matplotlib, and scipy to show embeddings.')
+    print(ex)
 
 
 
