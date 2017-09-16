@@ -219,7 +219,7 @@ with graph.as_default():
 # Step 5: Begin training
 ################################
 
-num_steps = 100001
+num_steps = 1000
 
 with tf.Session(graph=graph) as session:
     # We must initialize all variables before we use them.
@@ -270,15 +270,17 @@ def plot_with_labels(low_dim_embs, labels, filename):
     for i, label in enumerate(labels):
         x, y = low_dim_embs[i, :]
         plt.scatter(x, y)
-        plt.annotate(label,
-                    xy=(x, y),
-                    xytext=(5, 2),
-                    textcoords='offset points',
-                    ha='right',
-                    va='bottom')
+        plt.annotate(
+            label,
+            xy=(x, y),
+            xytext=(5, 2),
+            textcoords='offset points',
+            ha='right',
+            va='bottom'
+        )
 
         plt.savefig(filename)
-        subprocess.call(['catimg', '-f', 'tsne.png'])
+        subprocess.call(['catimg', '-f', filename])
 
 try:
     from sklearn.manifold import TSNE
