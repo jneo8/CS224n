@@ -161,6 +161,43 @@ valid_size = 16       # Random set of words to evaluate similarity on.
 valid_window = 100    # Only pick dev samples in the head of the distribution.
 valid_examples = np.random.choice(valid_window, valid_size, replace=False)
 
+graph = tf.Graph()
+
+
+with graph.as_default():
+
+    # Input data.
+    train_inputs = tf.placeholder(tf.int32, shape=[batch_size])
+    train_labels = tf.placeholder(tf.int32, shape=[batch_size, 1])
+    valid_dateset = tf.constant(valid_examples, dtype=tf.int32)
+
+    # Ops and variables pinned to the CPU because of missing GPU implementation
+    with tf.device('/cpu:0'):
+        # Look up embedding for input.
+        embeddings = tf.Variable(
+            tf.random_uniform([vocabulary_size, embedding_size], -1.0, 1.0)
+        )
+        embed = tf.nn.embedding_lookup(embeddings, train_inputs)
+
+        # Construct the variables for the NCE loss
+        nce_weight = tf.Variable(
+            tf.truncated_normal([vocabulary_size, embedding_size],
+                                stddev=1.0 / math.sqrt(embedding_size))
+        )
+
+        nce_biases = tf.Variable(tf.zeros([vocabulary_size]))
+
+    # Computer the average NCE loss for batch
+    norm = tf.sqrt(tf.reduce_sum(tf.square(embeddings), 1, keep_dims=True))
+    normalized_embeddings = embeddings / norm
+    valid_embeddings = tf.nn.embedding_lookup(
+        normalized_embeddings, valid_dateset)
+    similarity = tf.matmul(
+    valid_embeddings, normalized_embeddings, transpose_b=True)
+
+    # Add variable initializer.
+    init = tf.global_variables_initializer()
+
 
 
 
