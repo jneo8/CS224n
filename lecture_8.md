@@ -40,7 +40,7 @@ A language models computers a probability for a sequence of words : P(W1, .....W
 	
 > 主要講說傳統的model, 建構在不正確但是又是必須的馬可夫假設
 > 效能建構在大量的  n-grams 上
-> > 又做了所謂的平滑, 比如說  4-gram找不到換  3-gram
+> > 又做了所謂的平滑, 比如說  4-gram 找不到換  3-gram
 > > 
 > > 會消耗大量的RAM
 
@@ -68,7 +68,68 @@ A language models computers a probability for a sequence of words : P(W1, .....W
 
 - Example 
 
-- Jane walked into the room. John walked in too. It was late in the day. Jane said hi to ____
+- Jane walked into the room. John walked in too. It was late in the day. Jane said hi to __
+
+---
+
+# IPython Notebok with vanishing gradient example
+# 
+
+- Example of simple and clean NNet implementation
+
+- Comparisino of sigmoid and Relu units
+
+- A little bit of vanishing gradient
+
+---
+
+
+# Trick for exploding gradinet: clipping trick
+
+- The solution first introduced by Mikolov is to clip gradients to a maximum value.
+
+- Make a big difference in RNNs.
+
+---
+
+# Gradient clipping intuition
+
+- Error surface of a single hiden unit RNN
+
+- High curvature walls.
+
+- Solid lines: standard gradient descent trajectories
+
+- Dashed lines gradients rescaled to fixed size.
+
+
+---
+
+# For vanishing gradients: Initialization + ReLus!
+
+- Initialize `W(*)'s` to identity martix i and f(z) = rect(z) = max(z, 0)
+
+- -> Huge difference!
+
+- Initializatino idea first introduced in Parsing with Compositional Vector Grammars, Socher et al. 2013
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
