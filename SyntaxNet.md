@@ -33,6 +33,9 @@
 - Wess et al(2015)
     - input data ->  2X (hidden layer, RELU) -> Softmax Layer -> Perceptron Layer
 
+![](https://github.com/jneo8/CS224n/blob/master/images/syntaxnet_model.png?raw=true)
+
+
 
 ## Structured Perceptron Training + Beam Search
 
