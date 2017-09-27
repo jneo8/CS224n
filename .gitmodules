@@ -1,0 +1,3 @@
+[submodule "base_conf"]
+	path = base_conf
+	url = https://github.com/jneo8/base_conf.git
